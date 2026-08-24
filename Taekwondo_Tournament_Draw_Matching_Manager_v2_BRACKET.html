@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Taekwondo Tournament Draw & Matching Manager v1</title>
+<style>
+:root{--bg:#f4f6f8;--panel:#fff;--text:#18212b;--muted:#687585;--line:#dfe5eb;--primary:#1f5eff;--danger:#d9363e;--ok:#198754;--warn:#f59f00}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:8px;padding:9px 13px;background:#e9edf2;color:#18212b}
+button.primary{background:var(--primary);color:#fff}button.danger{background:var(--danger);color:#fff}button.ok{background:var(--ok);color:#fff}
+button.small{padding:6px 9px;font-size:12px}.app{display:flex;min-height:100vh}.side{width:245px;background:#111827;color:#fff;padding:18px;position:fixed;inset:0 auto 0 0;overflow:auto}.brand{font-size:18px;font-weight:700;margin-bottom:20px}.brand small{display:block;color:#9ca3af;font-size:11px;margin-top:4px}
+.nav button{display:block;width:100%;text-align:left;margin:4px 0;background:transparent;color:#cbd5e1}.nav button.active,.nav button:hover{background:#253149;color:#fff}
+.main{margin-left:245px;width:calc(100% - 245px);padding:22px}.top{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:18px}.top h1{margin:0;font-size:25px}.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+.page{display:none}.page.active{display:block}.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:16px}.card h2,.card h3{margin:0 0 14px}.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+label{font-size:12px;font-weight:700;color:#4b5563;display:block;margin-bottom:5px}input,select{width:100%;padding:10px;border:1px solid #cfd7df;border-radius:8px;background:#fff}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.stat{padding:16px;border:1px solid var(--line);border-radius:10px;background:#fff}.stat b{display:block;font-size:26px}.muted{color:var(--muted);font-size:13px}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;font-size:13px;vertical-align:middle}th{background:#f8fafc}.tag{display:inline-block;padding:4px 7px;border-radius:20px;background:#eef2ff;font-size:11px}.tag.green{background:#dcfce7}.tag.orange{background:#fff3cd}.tag.red{background:#fee2e2}
+.empty{padding:25px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}.actions{display:flex;gap:5px;flex-wrap:wrap}.note{padding:10px 12px;border-left:4px solid var(--primary);background:#eef4ff;font-size:13px;margin:10px 0}.warn{border-left-color:var(--warn);background:#fff8e6}.success{border-left-color:var(--ok);background:#ecfdf3}
+.bracket{overflow:auto;padding:10px 0}.rounds{display:flex;gap:55px;align-items:flex-start;min-width:max-content;padding:20px}.round{min-width:245px;position:relative}.round h4{text-align:center;margin:5px 0 20px}.bracket .match{position:relative}.bracket .match:after{content:"";position:absolute;right:-28px;top:50%;width:28px;border-top:1px solid #7b8794}.round:last-child .match:after{display:none}.bracket-title{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:15px}.pdf-preview{background:#d9dde2;padding:25px}.pdf-page{background:#fff;width:210mm;min-height:297mm;margin:0 auto 20px;padding:12mm;box-shadow:0 2px 12px #0003;page-break-after:always}.pdf-page h1,.pdf-page h2{text-align:center}.pdf-meta{text-align:center;font-size:10px;color:#555}.pdf-board{display:flex;gap:25px;min-width:max-content}.pdf-round{width:145px}.pdf-round h4{text-align:center;font-size:10px}.pdf-match{border:1px solid #555;font-size:8px;margin-bottom:15px}.pdf-match .mh{padding:4px;background:#eee;border-bottom:1px solid #777;font-weight:bold}.pdf-match .ps{padding:5px;border-bottom:1px solid #aaa}.pdf-match .ps:last-child{border:0}.match{background:#fff;border:1px solid var(--line);border-radius:9px;margin-bottom:18px;padding:9px}.match .row{padding:8px;border-bottom:1px solid #edf0f3}.match .row:last-child{border:0}.seed{font-size:10px;color:#8a96a3;margin-right:5px}.schedule-row{display:grid;grid-template-columns:90px 90px 75px 1fr 120px;gap:8px;align-items:center;border-bottom:1px solid var(--line);padding:9px 0}.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px;z-index:10}.modal.show{display:flex}.modal-box{background:#fff;border-radius:12px;max-width:700px;width:100%;max-height:90vh;overflow:auto;padding:20px}.right{text-align:right}
+@media(max-width:900px){.side{width:190px}.main{margin-left:190px;width:calc(100% - 190px)}.g4{grid-template-columns:repeat(2,1fr)}.schedule-row{grid-template-columns:1fr 1fr}.top{align-items:flex-start;flex-direction:column}}
+@media(max-width:650px){.side{position:static;width:100%;height:auto}.app{display:block}.main{margin:0;width:100%;padding:12px}.g2,.g3,.g4{grid-template-columns:1fr}.side .nav{display:grid;grid-template-columns:1fr 1fr}.side .nav button{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand">TKD Tournament Manager<small>Draw & Matching Manager v1</small></div>
+  <div class="nav">
+    <button data-page="dashboard" class="active">🏠 Dashboard</button>
+    <button data-page="event">⚙️ Event</button>
+    <button data-page="contingent">🏳️ Kontingen</button>
+    <button data-page="club">🏫 Club / Dojang</button>
+    <button data-page="category">🗂️ Kategori / Kelas</button>
+    <button data-page="athlete">🥋 Peserta</button>
+    <button data-page="draw">🎲 Draw / Matching</button>
+    <button data-page="bracket">📊 Bracket</button>
+    <button data-page="schedule">📅 Jadwal / Lapang</button>
+    <button data-page="result">🏅 Medali / Hasil</button>
+  </div>
+</aside>
+<main class="main">
+  <div class="top"><h1 id="pageTitle">Dashboard</h1><div class="top-actions">
+    <button onclick="saveData()">💾 Simpan</button><button onclick="loadSample()">🧪 Data Contoh</button><button onclick="clearData()" class="danger">Reset</button>
+  </div></div>
+
+<section id="dashboard" class="page active">
+ <div class="grid g4">
+  <div class="stat">Kontingen<b id="sCont">0</b></div><div class="stat">Club / Dojang<b id="sClub">0</b></div>
+  <div class="stat">Kategori<b id="sCat">0</b></div><div class="stat">Peserta<b id="sAth">0</b></div>
+ </div>
+ <div class="card"><h2>Status Sistem</h2><div id="dashInfo"></div></div>
+ <div class="card"><h2>Alur</h2><div class="grid g3">
+   <div class="note"><b>PRESTASI</b><br>Input → Draw → Bracket → Jadwal → Nomor Match</div>
+   <div class="note"><b>PEMULA</b><br>Input tinggi/berat → Matching → Grup/Final → Jadwal → Nomor Match</div>
+   <div class="note success"><b>NOMOR MATCH</b><br>Setiap Hari + Lapang dimulai kembali dari M001.</div>
+ </div></div>
+</section>
+
+<section id="event" class="page">
+ <div class="card"><h2>Pengaturan Event</h2><div class="grid g2">
+  <div><label>Nama Event</label><input id="evName"></div><div><label>Tanggal</label><input id="evDate" type="date"></div>
+  <div><label>Tempat</label><input id="evPlace"></div><div><label>Jumlah Hari</label><input id="evDays" type="number" min="1" value="1"></div>
+  <div><label>Jumlah Lapang</label><input id="evFields" type="number" min="1" value="2"></div>
+ </div><div class="toolbar"><button class="primary" onclick="saveEvent()">Simpan Event</button></div></div>
+</section>
+
+<section id="contingent" class="page">
+ <div class="card"><h2>Kontingen</h2><div class="grid g2"><div><label>Nama Kontingen</label><input id="contName"></div><div><label>Daerah / Kota</label><input id="contCity"></div></div><div class="toolbar"><button class="primary" onclick="addCont()">+ Tambah</button></div><div id="contTable"></div></div>
+</section>
+
+<section id="club" class="page">
+ <div class="card"><h2>Club / Dojang</h2><div class="grid g2"><div><label>Nama Club / Dojang</label><input id="clubName"></div><div><label>Kontingen</label><select id="clubCont"></select></div></div><div class="toolbar"><button class="primary" onclick="addClub()">+ Tambah</button></div><div id="clubTable"></div></div>
+</section>
+
+<section id="category" class="page">
+ <div class="card"><h2>Kategori / Kelas</h2><div class="grid g4">
+  <div><label>Nama Kategori</label><input id="catName" placeholder="Cadet U45"></div>
+  <div><label>Mode</label><select id="catMode"><option value="prestasi">Prestasi</option><option value="pemula">Pemula</option></select></div>
+  <div><label>Gender</label><select id="catGender"><option value="Putra">Putra</option><option value="Putri">Putri</option></select></div>
+  <div><label>Kelas Berat</label><input id="catWeight" placeholder="-45 Kg"></div>
+ </div><div class="toolbar"><button class="primary" onclick="addCat()">+ Tambah Kategori</button></div><div id="catTable"></div></div>
+</section>
+
+<section id="athlete" class="page">
+ <div class="card"><h2>Input Peserta</h2><div class="grid g4">
+  <div><label>Nama Peserta</label><input id="aName"></div><div><label>Mode</label><select id="aMode" onchange="syncAthMode()"><option value="prestasi">Prestasi</option><option value="pemula">Pemula</option></select></div>
+  <div><label>Kontingen</label><select id="aCont" onchange="refreshAthClub()"></select></div><div><label>Club / Dojang</label><select id="aClub"></select></div>
+  <div><label>Kategori / Kelas</label><select id="aCat"></select></div><div><label>Tanggal Lahir</label><input id="aDob" type="date"></div>
+  <div><label>Berat (Kg) <span class="muted">wajib Pemula</span></label><input id="aWeight" type="number" step="0.1"></div>
+  <div><label>Tinggi (Cm) <span class="muted">wajib Pemula</span></label><input id="aHeight" type="number" step="0.1"></div>
+ </div><div class="toolbar"><button class="primary" onclick="addAth()">+ Tambah Peserta</button></div>
+ <div class="note">Gunakan <b>By Kontingen/Club</b> atau <b>By Kategori/Kelas</b> di bawah untuk memeriksa data.</div>
+ <div class="grid g2"><div class="card"><h3>By Kontingen / Club</h3><select id="filterClub" onchange="renderAthleteViews()"></select></div><div class="card"><h3>By Kategori / Kelas</h3><select id="filterCat" onchange="renderAthleteViews()"></select></div></div>
+ <div id="athTable"></div></div>
+</section>
+
+<section id="draw" class="page">
+ <div class="card"><h2>Draw / Matching</h2><div class="grid g3">
+  <div><label>Kategori</label><select id="drawCat" onchange="drawPreview()"></select></div>
+  <div><label>Mode</label><div id="drawMode" class="tag">-</div></div>
+  <div id="pemFormatBox"><label>Format Pemula</label><select id="pemFormat"><option value="final">Langsung Final</option><option value="semi">Semifinal</option></select></div>
+ </div>
+ <div id="drawNote" class="note"></div><div class="toolbar"><button class="primary" onclick="runDraw()">🎲 Jalankan Draw / Matching</button><button onclick="removeBracketForCat()" class="danger">Hapus Draw Kategori</button></div>
+ <div id="drawPreview"></div></div>
+</section>
+
+<section id="bracket" class="page">
+ <div class="card"><h2>Bracket / Bagan Pertandingan</h2><div class="grid g3"><div><label>Kategori</label><select id="bracketCat" onchange="renderBracket()"></select></div><div id="bracketStatus"></div><div class="toolbar"><button class="primary" onclick="openPdfPreview()">📄 Preview PDF</button><button class="ok" onclick="printPdf()">⬇️ Simpan / Cetak PDF</button><button class="danger" onclick="redrawCurrentCategory()">🎲 Draw Ulang Kategori</button></div></div><div class="note">Draw ulang hanya mengganti kategori yang dipilih. Kategori lain tetap.</div><div id="bracketView" class="bracket"></div></div>
+</section>
+
+<section id="schedule" class="page">
+ <div class="card"><h2>Jadwal & Nomor Match</h2><div class="note success">Nomor pertandingan reset menjadi <b>M001</b> pada setiap kombinasi <b>Hari + Lapang</b>.</div>
+ <div class="toolbar"><button class="primary" onclick="generateSchedule()">📅 Buat / Susun Jadwal</button><button onclick="window.print()">🖨️ Cetak</button></div>
+ <div id="scheduleView"></div></div>
+</section>
+
+<section id="result" class="page">
+ <div class="card"><h2>Medali / Hasil</h2><div id="resultView"></div></div>
+</section>
+</main>
+</div>
+
+<div id="modal" class="modal"><div class="modal-box"><div id="modalBody"></div><div class="right"><button onclick="closeModal()">Tutup</button></div></div></div>
+
+<script>
+const KEY='tkd_tournament_v1';
+let S={event:{name:'Taekwondo Tournament',date:'',place:'',days:1,fields:2},contingents:[],clubs:[],categories:[],athletes:[],brackets:[],schedule:[]};
+
+const $=id=>document.getElementById(id);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function saveData(){localStorage.setItem(KEY,JSON.stringify(S)); alert('Data tersimpan di browser.');}
+function loadData(){try{const x=localStorage.getItem(KEY);if(x)S=JSON.parse(x)}catch(e){}}
+function clearData(){if(confirm('Reset semua data?')){localStorage.removeItem(KEY);location.reload()}}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));$('pageTitle').textContent=document.querySelector('.nav button.active').textContent.replace(/^[^ ]+ /,'');renderAll()}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+
+function saveEvent(){S.event={name:$('evName').value,date:$('evDate').value,place:$('evPlace').value,days:+$('evDays').value||1,fields:+$('evFields').value||1};saveData();renderAll()}
+function addCont(){let n=$('contName').value.trim();if(!n)return alert('Nama kontingen wajib.');S.contingents.push({id:uid(),name:n,city:$('contCity').value.trim()});$('contName').value='';$('contCity').value='';renderAll()}
+function addClub(){let n=$('clubName').value.trim(),c=$('clubCont').value;if(!n||!c)return alert('Nama club dan kontingen wajib.');S.clubs.push({id:uid(),name:n,contingentId:c});$('clubName').value='';renderAll()}
+function addCat(){let n=$('catName').value.trim();if(!n)return alert('Nama kategori wajib.');S.categories.push({id:uid(),name:n,mode:$('catMode').value,gender:$('catGender').value,weight:$('catWeight').value.trim()});$('catName').value='';renderAll()}
+function addAth(){
+ let n=$('aName').value.trim(),club=$('aClub').value,cat=$('aCat').value,mode=$('aMode').value;
+ if(!n||!club||!cat)return alert('Nama, club dan kategori wajib.');
+ if(mode==='pemula'&&(!$('aWeight').value||!$('aHeight').value))return alert('Untuk Pemula, berat dan tinggi wajib diisi.');
+ let cd=S.categories.find(x=>x.id===cat), cl=S.clubs.find(x=>x.id===club);
+ if(cd && cd.mode!==mode)return alert('Mode peserta harus sama dengan mode kategori.');
+ S.athletes.push({id:uid(),name:n,mode,contingentId:cl.contingentId,clubId:club,categoryId:cat,dob:$('aDob').value,weight:+$('aWeight').value||null,height:+$('aHeight').value||null});
+ $('aName').value='';$('aDob').value='';$('aWeight').value='';$('aHeight').value='';renderAll()
+}
+function del(type,id){if(!confirm('Hapus data ini?'))return;S[type]=S[type].filter(x=>x.id!==id);if(type==='categories'){S.athletes=S.athletes.filter(x=>x.categoryId!==id);S.brackets=S.brackets.filter(x=>x.categoryId!==id)}if(type==='clubs')S.athletes=S.athletes.filter(x=>x.clubId!==id);renderAll()}
+
+function refreshSelects(){
+ $('evName').value=S.event.name;$('evDate').value=S.event.date;$('evPlace').value=S.event.place;$('evDays').value=S.event.days;$('evFields').value=S.event.fields;
+ $('clubCont').innerHTML=S.contingents.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+ $('aCont').innerHTML=S.contingents.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+ refreshAthClub();
+ let catOpts=S.categories.map(x=>`<option value="${x.id}">${esc(x.name)} · ${x.mode}</option>`).join('');
+ $('aCat').innerHTML=catOpts;$('drawCat').innerHTML=catOpts;$('bracketCat').innerHTML=catOpts;
+ $('filterCat').innerHTML='<option value="">Semua kategori</option>'+catOpts;
+ $('filterClub').innerHTML='<option value="">Semua club</option>'+S.clubs.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+ drawPreview();
+}
+function refreshAthClub(){let c=$('aCont').value;$('aClub').innerHTML=S.clubs.filter(x=>x.contingentId===c).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}
+function syncAthMode(){let mode=$('aMode').value;$('aCat').innerHTML=S.categories.filter(x=>x.mode===mode).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}
+function contName(id){return S.contingents.find(x=>x.id===id)?.name||'-'}
+function clubName(id){return S.clubs.find(x=>x.id===id)?.name||'-'}
+function catName(id){return S.categories.find(x=>x.id===id)?.name||'-'}
+function cat(id){return S.categories.find(x=>x.id===id)}
+
+function renderCont(){ $('contTable').innerHTML=!S.contingents.length?'<div class="empty">Belum ada kontingen.</div>':`<div class="table-wrap"><table><tr><th>Kontingen</th><th>Daerah</th><th>Peserta</th><th></th></tr>${S.contingents.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.city)}</td><td>${S.athletes.filter(a=>a.contingentId===x.id).length}</td><td><button class="small danger" onclick="del('contingents','${x.id}')">Hapus</button></td></tr>`).join('')}</table></div>`}
+function renderClub(){ $('clubTable').innerHTML=!S.clubs.length?'<div class="empty">Belum ada club.</div>':`<div class="table-wrap"><table><tr><th>Club / Dojang</th><th>Kontingen</th><th>Peserta</th><th></th></tr>${S.clubs.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(contName(x.contingentId))}</td><td>${S.athletes.filter(a=>a.clubId===x.id).length}</td><td><button class="small danger" onclick="del('clubs','${x.id}')">Hapus</button></td></tr>`).join('')}</table></div>`}
+function renderCat(){ $('catTable').innerHTML=!S.categories.length?'<div class="empty">Belum ada kategori.</div>':`<div class="table-wrap"><table><tr><th>Kategori</th><th>Mode</th><th>Gender</th><th>Kelas</th><th>Peserta</th><th>Status</th><th></th></tr>${S.categories.map(x=>`<tr><td>${esc(x.name)}</td><td><span class="tag">${x.mode}</span></td><td>${x.gender}</td><td>${esc(x.weight)}</td><td>${S.athletes.filter(a=>a.categoryId===x.id).length}</td><td>${S.brackets.some(b=>b.categoryId===x.id)?'<span class="tag green">DRAWN</span>':'<span class="tag orange">DRAFT</span>'}</td><td><button class="small danger" onclick="del('categories','${x.id}')">Hapus</button></td></tr>`).join('')}</table></div>`}
+function renderAthleteViews(){
+ let fc=$('filterClub').value,fk=$('filterCat').value;
+ let arr=S.athletes.filter(a=>(!fc||a.clubId===fc)&&(!fk||a.categoryId===fk));
+ $('athTable').innerHTML=!arr.length?'<div class="empty">Tidak ada peserta sesuai filter.</div>':`<div class="table-wrap"><table><tr><th>Nama</th><th>Mode</th><th>Kontingen</th><th>Club</th><th>Kategori</th><th>TTL</th><th>Berat</th><th>Tinggi</th><th></th></tr>${arr.map(a=>`<tr><td><b>${esc(a.name)}</b></td><td>${a.mode}</td><td>${esc(contName(a.contingentId))}</td><td>${esc(clubName(a.clubId))}</td><td>${esc(catName(a.categoryId))}</td><td>${a.dob||'-'}</td><td>${a.weight||'-'}</td><td>${a.height||'-'}</td><td><button class="small danger" onclick="del('athletes','${a.id}')">Hapus</button></td></tr>`).join('')}</table></div>`
+}
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function ageOf(a){if(!a.dob)return 0;let d=new Date(a.dob),n=new Date();return n.getFullYear()-d.getFullYear()-((n.getMonth()<d.getMonth()||(n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()))?1:0)}
+function matchingScore(a,b){let w=Math.abs((a.weight||0)-(b.weight||0)),h=Math.abs((a.height||0)-(b.height||0)),age=Math.abs(ageOf(a)-ageOf(b));return w*5+h*1.5+age*3+(a.clubId===b.clubId?30:0)}
+function runDraw(){
+ let cid=$('drawCat').value,c=cat(cid),arr=S.athletes.filter(a=>a.categoryId===cid);
+ if(!c)return alert('Pilih kategori.');if(arr.length<2)return alert('Minimal 2 peserta.');
+ S.brackets=S.brackets.filter(b=>b.categoryId!==cid);
+ if(c.mode==='prestasi')createPrestasi(c,arr);else createPemula(c,arr,$('pemFormat').value);
+ appendCategoryMatchesToSchedule(cid);renumber();renderAll();alert('Draw / matching kategori berhasil dibuat.');
+}
+function createPrestasi(c,arr){
+ let p=shuffle(arr),n=1;while(n<p.length)n*=2;while(p.length<n)p.push(null);
+ let matches=[];for(let i=0;i<n;i+=2)matches.push({id:uid(),round:1,number:i/2+1,a:p[i],b:p[i+1],winner:null});
+ let rounds=[matches],size=n/2,prev=matches;
+ while(size>2){size/=2;let r=[];for(let i=0;i<prev.length;i+=2)r.push({id:uid(),round:rounds.length+1,number:i/2+1,a:null,b:null,winner:null,from:[prev[i].id,prev[i+1].id]});rounds.push(r);prev=r}
+ if(prev.length===2)rounds.push([{id:uid(),round:rounds.length+1,number:1,a:null,b:null,winner:null,from:[prev[0].id,prev[1].id]}]);
+ S.brackets.push({id:uid(),categoryId:c.id,mode:'prestasi',format:'bracket',rounds,status:'DRAWN',medalAll:false});
+}
+function createPemula(c,arr,format){
+ let p=shuffle(arr),matches=[],groups=[];
+ if(format==='final'){
+   for(let i=0;i<p.length;i+=2)matches.push({id:uid(),round:1,number:i/2+1,a:p[i],b:p[i+1]||null,winner:null,medal:true});
+   groups.push({name:'Final',matches});
+ }else{
+   // For 6 participants: exactly 2 groups of 3.
+   let groupCount=p.length===6?2:Math.max(2,Math.ceil(p.length/3));
+   for(let g=0;g<groupCount;g++)groups.push({name:`Semifinal ${g+1}`,participants:[]});
+   p.forEach((x,i)=>groups[i%groupCount].participants.push(x));
+   groups.forEach(g=>{
+     g.matches=[];for(let i=0;i<g.participants.length;i++)for(let j=i+1;j<g.participants.length;j++)g.matches.push({id:uid(),round:1,number:g.matches.length+1,a:g.participants[i],b:g.participants[j],winner:null,medal:true});
+   });
+ }
+ S.brackets.push({id:uid(),categoryId:c.id,mode:'pemula',format,groups,status:'DRAWN',medalAll:true});
+}
+function bracketFor(cid){return S.brackets.find(b=>b.categoryId===cid)}
+function removeBracketForCat(){let cid=$('drawCat').value;if(!cid)return;if(confirm('Hapus draw kategori ini?')){S.brackets=S.brackets.filter(b=>b.categoryId!==cid);S.schedule=S.schedule.filter(x=>x.categoryId!==cid);renderAll()}}
+function drawPreview(){
+ let cid=$('drawCat').value,c=cat(cid),b=bracketFor(cid),arr=S.athletes.filter(a=>a.categoryId===cid);$('drawMode').textContent=c?c.mode.toUpperCase():'-';
+ $('pemFormatBox').style.display=c?.mode==='pemula'?'block':'none';
+ $('drawNote').innerHTML=c?`<b>${esc(c.name)}</b> · ${c.gender} · ${esc(c.weight)} · ${arr.length} peserta. ${c.mode==='pemula'?'Tinggi dan berat menjadi dasar matching. Semua peserta Pemula mendapat jalur medali.':'Prestasi menggunakan bracket standard.'}`:'Pilih kategori.';
+ $('drawPreview').innerHTML=arr.length?`<div class="table-wrap"><table><tr><th>No</th><th>Peserta</th><th>Club</th><th>Berat</th><th>Tinggi</th></tr>${arr.map((a,i)=>`<tr><td>${i+1}</td><td>${esc(a.name)}</td><td>${esc(clubName(a.clubId))}</td><td>${a.weight||'-'}</td><td>${a.height||'-'}</td></tr>`).join('')}</table></div>${b?'<div class="note success">Kategori ini sudah memiliki hasil Draw/Matching.</div>':''}`:'<div class="empty">Belum ada peserta.</div>'
+}
+function renderBracket(){
+ let cid=$('bracketCat').value,b=bracketFor(cid),c=cat(cid);
+ $('bracketStatus').innerHTML=b?'<span class="tag green">DRAWN</span> <span class="tag">'+(c?.mode||'')+'</span> <span class="tag">'+S.schedule.filter(x=>x.categoryId===cid).length+' partai</span>':'<span class="tag orange">DRAFT</span>';
+ if(!b){$('bracketView').innerHTML='<div class="empty">Belum ada draw untuk kategori ini.</div>';return}
+ if(b.mode==='prestasi')renderPrestasiBracket(b,c);else renderPemulaBracket(b,c)
+}
+function matchNoFor(id){return S.schedule.find(x=>x.id===id)?.matchNo||'--'}
+function renderPrestasiBracket(b,c){
+ let html='<div class="bracket-title"><div><h3>'+esc(c.name)+'</h3><div class="muted">'+c.gender+' · '+esc(c.weight)+' · '+S.athletes.filter(a=>a.categoryId===c.id).length+' peserta</div></div></div><div class="rounds">';
+ html+=b.rounds.map((r,ri)=>'<div class="round"><h4>'+((ri===0)?'Ronde 1':(ri===b.rounds.length-1)?'FINAL':'Ronde '+(ri+1))+'</h4>'+r.map(m=>'<div class="match"><div class="mhead"><b>'+matchNoFor(m.id)+'</b> · Partai '+m.number+'</div><div class="row">'+person(m.a)+'</div><div class="row">'+person(m.b)+'</div></div>').join('')+'</div>').join('');
+ html+='</div>';$('bracketView').innerHTML=html
+}
+function renderPemulaBracket(b,c){
+ let html='<div class="bracket-title"><div><h3>'+esc(c.name)+'</h3><div class="muted">'+(b.format==='final'?'Langsung Final':'Semifinal')+' · Semua peserta mendapat medali</div></div></div>';
+ html+='<div class="grid g2">'+b.groups.map(g=>'<div class="card"><h3>'+esc(g.name)+'</h3>'+g.matches.map(m=>'<div class="match"><div class="mhead"><b>'+matchNoFor(m.id)+'</b> · Partai '+m.number+'</div><div class="row">'+person(m.a)+'</div><div class="row">'+person(m.b)+'</div></div>').join('')+'</div>').join('')+'</div>';
+ $('bracketView').innerHTML=html
+}
+function categoryMatches(cid){
+ let b=bracketFor(cid),out=[];if(!b)return out;
+ if(b.mode==='prestasi')b.rounds.forEach((r,ri)=>r.forEach(m=>out.push({id:m.id,categoryId:cid,round:ri===0?'Ronde 1':ri===b.rounds.length-1?'Final':'Ronde '+(ri+1),a:m.a,b:m.b,day:1,field:1,order:999999})));
+ else b.groups.forEach(g=>g.matches.forEach(m=>out.push({id:m.id,categoryId:cid,round:g.name,a:m.a,b:m.b,day:1,field:1,order:999999})));
+ return out
+}
+function appendCategoryMatchesToSchedule(cid){
+ let other=S.schedule.filter(x=>x.categoryId!==cid),items=categoryMatches(cid),max=other.reduce((m,x)=>Math.max(m,x.order??-1),-1);items.forEach((x,i)=>x.order=max+i+1);S.schedule=[...other,...items];renumber()
+}
+function generateSchedule(show=true){
+ let valid=new Set();S.brackets.forEach(b=>categoryMatches(b.categoryId).forEach(x=>valid.add(x.id)));let old=S.schedule.filter(x=>valid.has(x.id)),map=new Map(old.map(x=>[x.id,x]));let fresh=[];S.brackets.forEach(b=>categoryMatches(b.categoryId).forEach(x=>fresh.push(map.has(x.id)?{...x,...map.get(x.id)}:x)));S.schedule=fresh;renumber();renderSchedule();renderBracket()
+}
+function redrawCurrentCategory(){let cid=$('bracketCat').value;if(!cid)return;showPage('draw');$('drawCat').value=cid;drawPreview();runDraw()}
+function openPdfPreview(){let cid=$('bracketCat').value,b=bracketFor(cid),c=cat(cid);if(!b)return alert('Kategori belum didraw.');let html='<div class="pdf-preview"><div class="pdf-page"><h1>'+esc(S.event.name)+'</h1><h2>'+esc(c.name)+'</h2><div class="pdf-meta">'+c.gender+' · '+esc(c.weight)+' · '+S.athletes.filter(a=>a.categoryId===cid).length+' peserta</div><div class="pdf-board">';
+ if(b.mode==='prestasi')html+=b.rounds.map((r,ri)=>'<div class="pdf-round"><h4>'+((ri===0)?'RONDE 1':(ri===b.rounds.length-1)?'FINAL':'RONDE '+(ri+1))+'</h4>'+r.map(m=>'<div class="pdf-match"><div class="mh">'+matchNoFor(m.id)+' · Partai '+m.number+'</div><div class="ps">'+person(m.a)+'</div><div class="ps">'+person(m.b)+'</div></div>').join('')+'</div>').join('');
+ html+='</div></div></div>';$('modalBody').innerHTML=html;$('modal').classList.add('show')
+}
+function printPdf(){let cid=$('bracketCat').value,b=bracketFor(cid),c=cat(cid);if(!b)return alert('Kategori belum didraw.');let body='<div class="pdf-page"><h1>'+esc(S.event.name)+'</h1><h2>'+esc(c.name)+'</h2><div class="pdf-meta">'+c.gender+' · '+esc(c.weight)+'</div><div class="pdf-board">'+b.rounds.map((r,ri)=>'<div class="pdf-round"><h4>'+((ri===0)?'RONDE 1':(ri===b.rounds.length-1)?'FINAL':'RONDE '+(ri+1))+'</h4>'+r.map(m=>'<div class="pdf-match"><div class="mh">'+matchNoFor(m.id)+' · Partai '+m.number+'</div><div class="ps">'+person(m.a)+'</div><div class="ps">'+person(m.b)+'</div></div>').join('')+'</div>').join('')+'</div></div>';let w=window.open('','_blank');if(!w)return alert('Popup diblokir browser.');w.document.write('<!doctype html><html><head><title>Bracket PDF</title><style>body{font-family:Arial;margin:0}.pdf-page{padding:12mm;page-break-after:always}.pdf-page h1,.pdf-page h2{text-align:center}.pdf-meta{text-align:center;font-size:10px}.pdf-board{display:flex;gap:25px}.pdf-round{width:145px}.pdf-round h4{text-align:center;font-size:10px}.pdf-match{border:1px solid #555;font-size:8px;margin-bottom:15px}.mh{padding:4px;background:#eee;border-bottom:1px solid #777;font-weight:bold}.ps{padding:5px;border-bottom:1px solid #aaa}.ps:last-child{border:0}</style></head><body>'+body+'</body></html>');w.document.close();setTimeout(()=>w.print(),300)}
+function closeModal(){$('modal').classList.remove('show')}
+// KODE BARU (SUDAH DIPERBAIKI)
+function renumber(){
+ let groups={};S.schedule.sort((a,b)=>(a.day-b.day)||(a.field-b.field)||((a.order??999999)-(b.order??999999)));
+ S.schedule.forEach((x,i)=>{
+   let k=x.day+'_'+x.field;
+   groups[k] = (groups[k] || 0) + 1;
+   x.matchNo='M'+String(groups[k]).padStart(3,'0');
+   x.order=i;
+ });
+}
+function moveSched(id,dir){
+ let i=S.schedule.findIndex(x=>x.id===id);if(i<0)return;let x=S.schedule[i],same=S.schedule.filter(y=>y.day===x.day&&y.field===x.field);let j=same.findIndex(y=>y.id===id),target=j+dir;if(target<0||target>=same.length)return;let other=same[target],oi=S.schedule.findIndex(y=>y.id===other.id);[S.schedule[i].order,S.schedule[oi].order]=[S.schedule[oi].order,S.schedule[i].order];renumber();renderSchedule()
+}
+function relocate(id){
+ let x=S.schedule.find(y=>y.id===id);if(!x)return;let d=prompt('Hari baru:',x.day),f=prompt('Lapang baru:',x.field);if(d&&f){x.day=Math.max(1,+d);x.field=Math.max(1,+f);renumber();renderSchedule()}
+}
+function renderSchedule(){
+ if(!S.schedule.length){$('scheduleView').innerHTML='<div class="empty">Belum ada jadwal. Klik Buat / Susun Jadwal.</div>';return}
+ $('scheduleView').innerHTML=S.schedule.map((x,i)=>`<div class="schedule-row"><div><b>${x.matchNo}</b></div><div>Hari ${x.day}</div><div>Lapang ${x.field}</div><div><b>${esc(catName(x.categoryId))}</b><br>${person(x.a)} vs ${person(x.b)}<br><span class="muted">${esc(x.round)}</span></div><div class="actions"><button class="small" onclick="moveSched('${x.id}',-1)">↑</button><button class="small" onclick="moveSched('${x.id}',1)">↓</button><button class="small" onclick="relocate('${x.id}')">Pindah</button></div></div>`).join('')
+}
+function renderResults(){
+ let out=[];
+ S.categories.filter(c=>c.mode==='pemula').forEach(c=>{let b=bracketFor(c.id);if(b)S.athletes.filter(a=>a.categoryId===c.id).forEach(a=>out.push({a,c}))});
+ $('resultView').innerHTML=out.length?`<div class="note success">Aturan v1: seluruh peserta Pemula otomatis berstatus <b>MEDAL</b>. Jenis Gold/Silver/Bronze dapat diperinci pada revisi berikutnya sesuai aturan pertandingan.</div><table><tr><th>Peserta</th><th>Kategori</th><th>Club</th><th>Status</th></tr>${out.map(x=>`<tr><td>${esc(x.a.name)}</td><td>${esc(x.c.name)}</td><td>${esc(clubName(x.a.clubId))}</td><td><span class="tag green">MEDAL</span></td></tr>`).join('')}</table>`:'<div class="empty">Belum ada hasil Pemula yang didraw.</div>'
+}
+function renderDashboard(){
+ $('sCont').textContent=S.contingents.length;$('sClub').textContent=S.clubs.length;$('sCat').textContent=S.categories.length;$('sAth').textContent=S.athletes.length;
+ $('dashInfo').innerHTML=`<div class="grid g3"><div><b>Event</b><br>${esc(S.event.name||'-')}<br><span class="muted">${esc(S.event.place||'-')}</span></div><div><b>Lapangan</b><br>${S.event.fields} lapang × ${S.event.days} hari</div><div><b>Match terjadwal</b><br>${S.schedule.length}</div></div>`;
+}
+function renderAll(){refreshSelects();renderCont();renderClub();renderCat();renderAthleteViews();renderBracket();renderSchedule();renderResults();renderDashboard()}
+function loadSample(){
+ if(!confirm('Masukkan data contoh? Data yang ada tidak dihapus.'))return;
+ let c1={id:uid(),name:'Kontingen A',city:'Tasikmalaya'},c2={id:uid(),name:'Kontingen B',city:'Cirebon'};S.contingents.push(c1,c2);
+ let cl1={id:uid(),name:'Dojang Garuda',contingentId:c1.id},cl2={id:uid(),name:'Dojang Naga',contingentId:c2.id},cl3={id:uid(),name:'Dojang Merah',contingentId:c1.id};S.clubs.push(cl1,cl2,cl3);
+ let cp={id:uid(),name:'Cadet U45 Putra',mode:'prestasi',gender:'Putra',weight:'-45 Kg'},cm={id:uid(),name:'Cadet U45 Pemula Putra',mode:'pemula',gender:'Putra',weight:'-45 Kg'};S.categories.push(cp,cm);
+ ['Andi','Bima','Candra','Doni'].forEach((n,i)=>S.athletes.push({id:uid(),name:n,mode:'prestasi',contingentId:i%2?c2.id:c1.id,clubId:[cl1.id,cl2.id,cl3.id,cl2.id][i],categoryId:cp.id,dob:'2012-01-01',weight:40+i,height:145+i}));
+ ['Eka','Fajar','Gilang','Hadi','Indra','Jaka'].forEach((n,i)=>S.athletes.push({id:uid(),name:n,mode:'pemula',contingentId:i%2?c2.id:c1.id,clubId:[cl1.id,cl2.id,cl3.id,cl2.id,cl1.id,cl3.id][i],categoryId:cm.id,dob:`2013-0${(i%6)+1}-10`,weight:32+i*.8,height:138+i}));
+ renderAll();saveData()
+}
+loadData();renderAll();
+</script>
+</body>
+</html>
